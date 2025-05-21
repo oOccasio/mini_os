@@ -1,4 +1,4 @@
-#include "../my_os/header/Header.c"
+#include "../my_os/header/Header.h"
 
 User* parseUserLine(char* line);
 void addUserToList(UserList** userList, User* newUser);

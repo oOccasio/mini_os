@@ -1,4 +1,4 @@
-#include "../my_os/header/Header.c"
+#include "../my_os/header/Header.h"
 
 int countLink(Directory* directory){
     int link = 0;

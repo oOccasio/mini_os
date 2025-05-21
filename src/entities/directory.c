@@ -1,4 +1,4 @@
-#include "../my_os/header/Header.c"
+#include "../my_os/header/Header.h"
 
 
 // Directory.txt 파일에 파일의 정보를 작성하기기

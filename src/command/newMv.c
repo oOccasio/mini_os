@@ -1,4 +1,4 @@
-#include "../header/Header.c"
+#include "../my_os/header/Header.h"
 
 // 권한 복사 함수
 void copyPermissions(Directory* dest, Directory* src) {

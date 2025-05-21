@@ -1,3 +1,4 @@
+#ifndef HEADER_H_
 #define HEADER_H_
 
 #include <stdio.h>
@@ -6,7 +7,7 @@
 #include <stdbool.h>
 #include <time.h>
 #include<sys/utime.h>
-
+#include <pthread.h>
 
 //Max 길이 설정
 #define MAX_BUUFFER 512
@@ -176,6 +177,10 @@ void setPermission(Directory * directory, const char * mode);
 //utility 관련 코드
 int countLink(Directory * directory);
 
+//Command 관련 코드
+void classificationCommand(char * cmd);
+
+
 //ls
 //ls.c
 void showDirectoryDetail(Directory * temp, char* name);
@@ -183,21 +188,60 @@ void listDirectory(Directory * Directory, bool showAll, bool showDetails);
 void * listDirectoryThread(void * arg);
 
 //mkdir
-
-
+Directory* createNewDirectory(char* name, const char* mode);
+void addDirectoryRoute(Directory* newDir, Directory* parent, char* dirName);
+void* makeDirectory(void* arg);
 
 // chmod
 void * changeMode(void * arg);
 
 // cd
+void changeDirectory(char* path);
+
 
 // cat
+void catFiles(char* fileNames[], int fileCount);
+void catFilesWithLineNumbers(char* fileNames[], int fileCount);
+void createFile(char* fileName);
+void concatenateFilesToNewFile(char* inputFiles[], int inputFileCount, char* outputFile);
+void appendToFile(char* fileName);
 
 // touch
+void touchFile(char* fileName);
+void touchFiles(char* fileNames[], int fileCount);
+void touchFileWithTime(char* timeInfo, char* fileName);
+void touchFileWithCurrentTime(char* fileName);
+void touchFileWithReference(char* refFile, char* targetFile);
 
 // cp
+void copyFile(Directory* source, Directory* destination);
+void copyDirectory(Directory* source, Directory* destinationParent, bool recursive, char* folderName);
 
 // mv.c
 void moveFile(Directory * source, Directory * destination, char * newName);
 void moveDirectory(Directory * source, Directory * destination, char * newName, bool recursive);
 
+//grep
+void grepFile(GrepArgs* args);
+void handleGrepCommand(char* command);
+
+
+
+//rmdir
+
+
+//clear
+
+
+//useradd
+User* addUser(char* username, int UID, int GID);
+void createHomeDirectory(char* username, User* newUser);
+
+//login.c
+User* login();
+
+//printHeader
+void printHeader(DirectoryTree* workingDirectory, User* user);
+
+
+#endif

@@ -1,4 +1,4 @@
-#include "../my_os/header/Header.c"
+#include "../my_os/header/Header.h"
 
 void moveFile(Directory * source, Directory * destination, char * newName){
 

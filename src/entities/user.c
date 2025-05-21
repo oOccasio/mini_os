@@ -1,4 +1,4 @@
-#include "../my_os/header/Header.c"
+#include "../my_os/header/Header.h"
 
 char * findUserById(int UID){
     UserList * currentUser = userList;  //currentUserList 로 변수를 하고

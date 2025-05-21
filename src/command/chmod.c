@@ -1,6 +1,5 @@
-#include "../header/Header.c"
+#include "../my_os/header/Header.h"
 
-//스레드 부분 공부 후에 리팩토링 예정정
 void* changeMode(void* arg) {
     ChmodArgs* args = (ChmodArgs*)arg;
     char* path = args->path;

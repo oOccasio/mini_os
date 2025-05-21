@@ -1,4 +1,4 @@
-#include "../my_os/header/Header.c"
+#include "../my_os/header/Header.h"
 
 void atoiPermission(Directory * directory, char* perstr){
     char userstr[2] = ""; //문자열 저장을 위해 배열크기 2

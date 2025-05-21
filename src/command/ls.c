@@ -1,6 +1,6 @@
-#include "../my_os/header/Header.c"
+#include "../my_os/header/Header.h"
 
-void showDirectoryDetail(Directory * temp, char * name){
+void showDirectoryDetail(Directory* temp, char * name){
     
     char permission[11] = {0};
     permission[0] = (temp->type == 'd') ? 'd' : '-';
