@@ -206,12 +206,6 @@ void createFile(char* fileName);
 void concatenateFilesToNewFile(char* inputFiles[], int inputFileCount, char* outputFile);
 void appendToFile(char* fileName);
 
-// touch
-void touchFile(char* fileName);
-void touchFiles(char* fileNames[], int fileCount);
-void touchFileWithTime(char* timeInfo, char* fileName);
-void touchFileWithCurrentTime(char* fileName);
-void touchFileWithReference(char* refFile, char* targetFile);
 
 // cp
 void copyFile(Directory* source, Directory* destination);
@@ -221,9 +215,6 @@ void copyDirectory(Directory* source, Directory* destinationParent, bool recursi
 void moveFile(Directory * source, Directory * destination, char * newName);
 void moveDirectory(Directory * source, Directory * destination, char * newName, bool recursive);
 
-//grep
-void grepFile(GrepArgs* args);
-void handleGrepCommand(char* command);
 
 
 
@@ -231,6 +222,7 @@ void handleGrepCommand(char* command);
 
 
 //clear
+
 
 
 //useradd
