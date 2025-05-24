@@ -37,7 +37,8 @@ void loadUser() {
         if (len > 0 && tmp[len - 1] == '\n') {
             tmp[len - 1] = '\0';
         }
-
+        
+        
         User* newUser = parseUserLine(tmp);
         if (!newUser) {
             fprintf(stderr, "Failed to parse user line\n");
@@ -64,6 +65,8 @@ void loadUser() {
 
 //유저 parsing하는 코드드
 User* parseUserLine(char* line) {
+    line[strcspn(line, "\r\n")] = '\0';
+
     User* newUser = (User*)malloc(sizeof(User));
     if (!newUser) {
         fprintf(stderr, "Memory allocation failed for User\n");
