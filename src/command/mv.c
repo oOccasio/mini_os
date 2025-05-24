@@ -13,29 +13,36 @@ void addChildToDirectory(Directory* parent, Directory* child) {
         parent->leftChild = child;
     } else {
         Directory* sibling = parent->leftChild;
+        }
         while (sibling->rightSibling != NULL) {
             sibling = sibling->rightSibling;
-        }
+        }        
         sibling->rightSibling = child;
-    }
 }
+
 
 // 부모 노드에서 자식 제거 함수
 void removeChildFromParent(Directory* parent, Directory* target) {
+    if (!parent || !target || !parent->leftChild) return;
+
     if (parent->leftChild == target) {
         parent->leftChild = target->rightSibling;
     } else {
         Directory* sibling = parent->leftChild;
-        while (sibling->rightSibling != target) {
+        while (sibling->rightSibling && sibling->rightSibling != target) {
             sibling = sibling->rightSibling;
         }
-        sibling->rightSibling = target->rightSibling;
+        if (sibling->rightSibling == target) {
+            sibling->rightSibling = target->rightSibling;
+        }
     }
 }
 
+
+
 // 파일 이동 함수
 void moveFile(Directory* source, Directory* destination, char* newName) {
-    Directory* newFile = createNewDirectory(newName, "644"); // 기본 권한 644
+    Directory* newFile = createNewDirectory(newName, "644");
     newFile->type = '-';
     newFile->size = source->size;
     newFile->parent = destination;
