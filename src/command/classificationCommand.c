@@ -354,6 +354,7 @@ void classificationCommand(char * cmd){
     //pwd
     else if(strcmp(command, "pwd") == 0){
         printf("%s\n", dirTree->current->route);
+    }
     
     //mv
     else if(strcmp(command, "mv") == 0){
