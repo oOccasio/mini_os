@@ -13,11 +13,12 @@ void addChildToDirectory(Directory* parent, Directory* child) {
         parent->leftChild = child;
     } else {
         Directory* sibling = parent->leftChild;
-        }
+        
         while (sibling->rightSibling != NULL) {
             sibling = sibling->rightSibling;
         }        
         sibling->rightSibling = child;
+    }
 }
 
 
