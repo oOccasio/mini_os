@@ -1,0 +1,13 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "C/C++ Runner: Debug Session",
+      "type": "lldb",
+      "request": "launch",
+      "args": [],
+      "cwd": "/Users/junhyung/Desktop/mini_os/src/command",
+      "program": "/Users/junhyung/Desktop/mini_os/src/command/build/Debug/outDebug"
+    }
+  ]
+}
