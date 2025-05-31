@@ -42,7 +42,7 @@ void classificationCommand(char * cmd){
         pthread_t threads[MAX_THREAD];
         int threadCount = 0;
 
-         //command가 없을 시 현재 디렉토리 내용 출력
+        //command가 없을 시 현재 디렉토리 내용 출력
         if(command == NULL){
             targetDirectory = dirTree->current;
             listDirectory(targetDirectory, showAll, showDetails); //타겟 디렉토리 내용 나열
@@ -55,7 +55,7 @@ void classificationCommand(char * cmd){
                         //해당 경로 없을 시 오류 출력
                         printf("ls: No such file or directory: %s\n", command);
                     }else{
-                       ListArgs* data = (ListArgs*)malloc(sizeof(ListArgs));
+                        ListArgs* data = (ListArgs*)malloc(sizeof(ListArgs));
                         data->directory = targetDirectory;
                         data->showAll = showAll;
                         data->showDetails = showDetails;
@@ -64,12 +64,13 @@ void classificationCommand(char * cmd){
                         threadCount++;
                     
                     }
-                    
-                    for(int i = 0; i < threadCount; i++) {
-                        pthread_join(threads[i], NULL);
-                    }   
 
                     command = strtok_r(NULL, " ", &saveptr);
+                }
+
+                // 모든 스레드 완료 대기
+                for (int i = 0; i < threadCount; i++) {
+                    pthread_join(threads[i], NULL);
                 }
         }
         
@@ -117,7 +118,7 @@ void classificationCommand(char * cmd){
 
     }
     //cat 
-    else if(strcmp(command, "cat") == 0) {
+    else if (strcmp(command, "cat") == 0) {
         command = strtok_r(NULL, " ", &saveptr);
         if (command == NULL) {
             printf("cat: missing operand\n");
@@ -134,28 +135,37 @@ void classificationCommand(char * cmd){
             command = strtok_r(NULL, " ", &saveptr);
         }
 
-        // 리다이렉션 확인
-        char* nextToken = command;
-        while (nextToken != NULL) {
-            if (strcmp(nextToken, ">") == 0) {
-                isRedirect = true;
-                nextToken = strtok_r(NULL, " ", &saveptr);
-                if (nextToken != NULL) {
-                    outputFile = nextToken;
-                }
-                break;
-            } else if (strcmp(nextToken, ">>") == 0) {
-                isAppend = true;
-                nextToken = strtok_r(NULL, " ", &saveptr);
-                if (nextToken != NULL) {
-                    outputFile = nextToken;
-                }
-                break;
-            }
-            nextToken = strtok_r(NULL, " ", &saveptr);
+        char* files[MAX_BUFFER];
+        int fileCount = 0;
+
+        // 파일 목록 수집
+        while (command != NULL && strcmp(command, ">") != 0 && strcmp(command, ">>") != 0) {
+            files[fileCount++] = command;
+            command = strtok_r(NULL, " ", &saveptr);
         }
 
-        // 파일 생성 또는 추가
+        // 리다이렉션 확인
+        // 리다이렉션 확인
+        if (command != NULL) {
+            if (strcmp(command, ">") == 0) {
+                isRedirect = true;
+                outputFile = strtok_r(NULL, " ", &saveptr);
+                if (outputFile == NULL) {
+                    printf("cat: missing file operand after '>'\n");
+                    return;
+                }
+            } else if (strcmp(command, ">>") == 0) {
+                isAppend = true;
+                outputFile = strtok_r(NULL, " ", &saveptr);
+                if (outputFile == NULL) {
+                    printf("cat: missing file operand after '>>'\n");
+                    return;
+                }
+            }
+        }
+
+
+        // 리다이렉션 관련 처리
         if (isRedirect && outputFile != NULL) {
             createFile(outputFile);
             return;
@@ -164,23 +174,10 @@ void classificationCommand(char * cmd){
             return;
         }
 
-        char* files[MAX_BUFFER];
-        int fileCount = 0;
-        
-        // 일반 cat 명령어 처리
-        while (command != NULL && strcmp(command, ">") != 0 && strcmp(command, ">>") != 0) {
-            files[fileCount++] = command;
-            command = strtok_r(NULL, " ", &saveptr);
-        }
-
-        if (fileCount == 0) {
-            printf("cat: missing file operand\n");
-            return;
-        }
-        
-        // 멀티스레딩 출력
-        catFilesThread(files, fileCount, showLineNumber);
+        // 단일 스레드로 파일 출력 호출
+        catFiles(files, fileCount, showLineNumber);
     }
+
     //chmod
     else if(strcmp(command, "chmod") == 0){
         command = strtok_r(NULL, " ", &saveptr);
@@ -217,6 +214,7 @@ void classificationCommand(char * cmd){
 
         updateDirectoryFile();
     }
+
     //cp
     else if (strcmp(command, "cp") == 0) {
     bool recursive = false;
@@ -318,18 +316,29 @@ void classificationCommand(char * cmd){
     updateDirectoryFile();
 }
 
-    //pwd
-    else if (strcmp(command, "pwd")==0) {
-    Queue dirQueue;
-    initQueue(&dirQueue);
+    //pwd.c
+    else if (strcmp(command, "pwd") == 0){
+        Queue dirQueue;
+        initQueue(&dirQueue);
+        command = strtok_r(NULL, " ", &saveptr);
 
-    // 옵션 파싱
-    char *opt = strtok_r(NULL, " ", &saveptr);
-    pwd(dirTree, &dirQueue, opt);
+        if (command != NULL && strcmp(command,"-L") == 0){
+            pwd(dirTree, &dirQueue, "-L");
+        } else if (command != NULL && strcmp(command,"-P") == 0){
+            pwd(dirTree, &dirQueue, "-P");
+        } else if(command != NULL && strcmp(command, "--help") == 0){
+            pwd(dirTree, &dirQueue, "--help");
+        } else{
+            pwd(dirTree, &dirQueue, NULL);
+        }
+        freeQueue(&dirQueue);
+    }
 
-    // 필요하다면 freeQueue(&dirQueue); // 큐 메모리 해제
-    return;
-}
+    //clear.c
+    else if (strcmp(command, "clear")==0){
+        clear();
+        return;
+    }
 
 
     //mv
@@ -433,14 +442,39 @@ void classificationCommand(char * cmd){
             free(dirPaths[i]);
         }
     }
-    //adduser
-    else if(strcmp(command, "adduser") == 0 ) {
-        char *opt = strtok_r(NULL, "", &saveptr);
-        adduser(opt, dirTree, &userList); // 함수 이름을 맞춰서 호출
-        return;
+    
+    //adduser.c
+    else if (strcmp(command, "adduser") == 0){
+        int UID = 1000;
+        int GID = 1000;
+        char username[MAX_NAME] = {0};
+        command = strtok_r(NULL, " ", &saveptr);
+
+        while (command != NULL){
+            if (strcmp(command, "-u") == 0) {
+                command = strtok_r(NULL, " ", &saveptr);
+                if (command != NULL) {
+                    UID = atoi(command);
+                }
+            } else if (strcmp(command, "-g") == 0) {
+                command = strtok_r(NULL, " ", &saveptr);
+                if (command != NULL) {
+                    GID = atoi(command);
+                }
+            } else {
+                strncpy(username, command, MAX_NAME - 1);
+                username[MAX_NAME - 1] = '\0';
+            }
+            command = strtok_r(NULL, " ", &saveptr);
+        }
+
+        if(strlen(username) == 0){
+            printf("adduser: have to enter user name.\n");
+            return;
+        }
+
+        adduser(username, UID, GID, dirTree, &userList);
     }
-
-
     
     //zip.c
     else if (strcmp(command, "zip") == 0) {
@@ -531,5 +565,7 @@ void classificationCommand(char * cmd){
 
         unzip_files(zipName);
         // 압축 해제된 파일들은 zip_files 함수 내에서 가상 디렉토리에 추가됨
-    }
+    }else {
+    printf("잘못된 명령어입니다: %s\n", command);
+}
 }

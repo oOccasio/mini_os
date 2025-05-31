@@ -3,12 +3,11 @@
 // 파일 복사: 파일 데이터만 복사
 void copyFile(Directory* source, Directory* destination) {
     char srcPath[256], destPath[256];
-    
-    // route 기반 경로 사용
+
     snprintf(srcPath, sizeof(srcPath), "information/resources/file%s", source->route);
     snprintf(destPath, sizeof(destPath), "information/resources/file%s", destination->route);
 
-    // 상위 디렉토리가 없으면 생성
+    // 상위 디렉토리 생성
     char tempPath[256];
     strncpy(tempPath, destPath, sizeof(tempPath));
     char* lastSlash = strrchr(tempPath, '/');
@@ -19,13 +18,13 @@ void copyFile(Directory* source, Directory* destination) {
         system(mkdirCmd);
     }
 
-    FILE *src = fopen(srcPath, "rb");
+    FILE* src = fopen(srcPath, "rb");
     if (!src) {
         perror("copyFile: source open failed");
         return;
     }
 
-    FILE *dest = fopen(destPath, "wb");
+    FILE* dest = fopen(destPath, "wb");
     if (!dest) {
         perror("copyFile: destination open failed");
         fclose(src);
@@ -41,7 +40,6 @@ void copyFile(Directory* source, Directory* destination) {
     fclose(dest);
 }
 
-
 // 디렉토리 복사: 구조(포인터) 완전성 보장
 void copyDirectory(Directory* source, Directory* destParent, bool recursive, char* folderName) {
     if (!recursive) {
@@ -49,25 +47,31 @@ void copyDirectory(Directory* source, Directory* destParent, bool recursive, cha
         return;
     }
 
-    // 새 디렉토리 생성
-    Directory* newDir = createNewDirectory(folderName, "755");
-    newDir->type = 'd';
-    newDir->parent = destParent;
-    newDir->leftChild = NULL;
-    newDir->rightSibling = NULL;
-    addDirectoryRoute(newDir, destParent, folderName);
+    Directory* newDir;
 
-    // ✅ 반드시 부모 트리에 연결
-    if (destParent->leftChild == NULL) {
-        destParent->leftChild = newDir;
+    if (folderName != NULL) {
+        // 진입 시점 디렉토리 생성
+        newDir = createNewDirectory(folderName, "755");
+        newDir->type = 'd';
+        newDir->parent = destParent;
+        newDir->leftChild = NULL;
+        newDir->rightSibling = NULL;
+        addDirectoryRoute(newDir, destParent, folderName);
+
+        // 부모에 연결
+        if (destParent->leftChild == NULL) {
+            destParent->leftChild = newDir;
+        } else {
+            Directory* sibling = destParent->leftChild;
+            while (sibling->rightSibling)
+                sibling = sibling->rightSibling;
+            sibling->rightSibling = newDir;
+        }
     } else {
-        Directory* sibling = destParent->leftChild;
-        while (sibling->rightSibling)
-            sibling = sibling->rightSibling;
-        sibling->rightSibling = newDir;
+        // 재귀 호출 시 이미 만들어진 디렉토리 재사용
+        newDir = destParent;
     }
 
-    // 자식 노드 순회 및 재귀 복사
     Directory* prevChild = NULL;
     Directory* child = source->leftChild;
     while (child) {
@@ -85,8 +89,7 @@ void copyDirectory(Directory* source, Directory* destParent, bool recursive, cha
                 prevChild->rightSibling = copied;
             prevChild = copied;
 
-            // 재귀 호출
-            copyDirectory(child, copied, true, child->name);
+            copyDirectory(child, copied, true, NULL); 
         } else if (child->type == '-') {
             Directory* copied = createNewDirectory(child->name, "644");
             copied->type = '-';

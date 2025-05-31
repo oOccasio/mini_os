@@ -104,7 +104,6 @@ void listDirectory(Directory *directory, bool showAll, bool showDetails) {
 
 
 
-//스레드 관련 공부 후 리팩토링 예정
 void* listDirectoryThread(void* arg) {
     ListArgs* data = (ListArgs*)arg;
     Directory* directory = data->directory;

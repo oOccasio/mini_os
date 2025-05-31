@@ -13,18 +13,9 @@ int isEmpty(Queue * queue){
 }
 
 
-/*bool isEmtpy(Queue * queue){
-    return queue->size == 0;
-}*/
-
 int isFull(Queue * queue){
     return queue->size == MAX_QUEUE_SIZE;
 }
-
-/*bool isFull(Queue * queue){
-    return queue->size == MAX_QUEUE_SIZE;
-}*/
-
 
 void enqueue(Queue * queue, const char * str){
     if (isFull(queue)){
@@ -32,7 +23,7 @@ void enqueue(Queue * queue, const char * str){
         return;
     }
     queue -> rear = (queue -> rear + 1) % MAX_QUEUE_SIZE;
-    queue->items[queue->rear] = strdup(str); // ✅ 내부에서 strdup로 복사
+    queue->items[queue->rear] = strdup(str); // 내부에서 strdup로 복사
     queue->size++;
 }
 

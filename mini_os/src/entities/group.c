@@ -94,5 +94,3 @@ void addGroupToList(GroupList** groupList, Group* newGroup) {
         tmp->nextGroup = newNode;
     }
 }
-
-

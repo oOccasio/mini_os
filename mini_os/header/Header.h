@@ -98,12 +98,6 @@ typedef struct{
     bool showDetails;
 } ListArgs;
 
-//Cat 인자
-typedef struct{
-    char* fileName;
-    bool showLineNumber;
-} CatArgs;
-
 //Makdir 인자
 typedef struct {
     char path[MAX_ROUTE];
@@ -116,15 +110,6 @@ typedef struct{
     char path[MAX_ROUTE];
     char mode[4];
 } ChmodArgs;
-
-//Grep 인자
-typedef struct{
-    bool showLineNumbers;
-    bool ignoreCase;
-    bool invertMatch;
-    char * targetString;
-    char * fileName;
-} GrepArgs;
 
 // rmdir 인자
 typedef struct {
@@ -213,8 +198,7 @@ void changeDirectory(char* path);
 
 
 // cat
-void* catThread(void* arg);
-void catFilesThread(char* fileNames[], int fileCount, bool showLineNumber);
+void catFiles(char* fileNames[], int fileCount, bool showLineNumber);
 void createFile(const char* fileName);
 void appendFile(const char* fileName);
 
@@ -248,20 +232,16 @@ static Directory* create_file_safely(const char* path, const char* mode, long si
 //clear
 int clear();
 
+//pwd
+int pwd(DirectoryTree *dirTree, Queue *dirQueue, char *option);
 
 //useradd
-User* addUser(char* username, int UID, int GID);
-void createHomeDirectory(char* username, User* newUser);
-void adduser(char* argument, DirectoryTree* dirtree, UserList** usertree);
+User* adduser(char* username, int UID, int GID, DirectoryTree* dirTree, UserList** userTree);
 
 //login.c
 User* login();
 
 //printHeader
 void printHeader(DirectoryTree* workingDirectory, User* user);
-
-//pwd
-// pwd 함수 선언
-int pwd(DirectoryTree *dirTree, Queue *dirQueue, char *option);
 
 #endif

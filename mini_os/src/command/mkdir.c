@@ -62,13 +62,18 @@ static void linkNewDirectory(Directory* parent, Directory* newDir) {
  경로를 '/' 기준으로 분할해서 큐에 저장 (빈 세그먼트 무시)
  path: 분할할 경로 문자열
  */
+// splitPathToQueue 수정
 static void splitPathToQueue(Queue* queue, char* path) {
     char* token = strtok(path, "/");
     while(token != NULL) {
-        if(strlen(token) > 0) enqueue(queue, token); // ❌ strdup 없이 원본 포인터 enqueue
+        if(strlen(token) > 0) {
+            char* copied = strdup(token);  // ✔ strdup을 통해 heap에 복사
+            enqueue(queue, copied);        // 안전하게 enqueue
+        }
         token = strtok(NULL, "/");
     }
 }
+
 
 
 
@@ -82,108 +87,58 @@ static void splitPathToQueue(Queue* queue, char* path) {
  */
 void* makeDirectory(void* arg) {
     MkdirArgs* args = (MkdirArgs*)arg;
-    char* path = args->path;              // 생성할 경로
-    const char* mode = args->mode;        // 권한 문자열
-    bool createParents = args->createParents; // -p 옵션 여부
+    char* path = args->path;
+    const char* mode = args->mode;
+    bool createParents = args->createParents;
 
-    // 경로 복사 (strtok로 분할 시 원본 보존)
     char pathCopy[MAX_ROUTE];
-    strncpy(pathCopy, path, MAX_ROUTE-1);
-    pathCopy[MAX_ROUTE-1] = '\0';
+    strncpy(pathCopy, path, MAX_ROUTE - 1);
+    pathCopy[MAX_ROUTE - 1] = '\0';
 
-    // 이미 동일한 경로가 존재하면 에러 출력 후 종료
-    if(findRoute(pathCopy) != NULL) {
-    printf("mkdir: cannot create directory '%s': File exists\n", path);
-    free(args);
-    return NULL;
+    if (findRoute(pathCopy) != NULL) {
+        printf("mkdir: cannot create directory '%s': File exists\n", path);
+        free(args);
+        return NULL;
     }
+
     Queue* queue = (Queue*)malloc(sizeof(Queue));
     initQueue(queue);
+    splitPathToQueue(queue, pathCopy);
 
-    Directory* currentDirectory;
-    if(createParents) {
-        // -p 옵션: 중간 경로가 없으면 자동 생성
-        currentDirectory = (path[0] == '/') ? dirTree->root : dirTree->current;
-        Queue* queue = (Queue*)malloc(sizeof(Queue));
-        initQueue(queue);
-        splitPathToQueue(queue, pathCopy);
+    Directory* currentDirectory = (path[0] == '/') ? dirTree->root : dirTree->current;
 
-        char* dirName = NULL; // 마지막 세그먼트 저장용
-        while(!isEmpty(queue)) {
-            char* segment = dequeue(queue);
-            dirName = segment; // 마지막 세그먼트가 최종 디렉토리 이름
-            Directory* tmp = currentDirectory->leftChild;
-            // 현재 디렉토리의 하위에서 이름 일치하는 디렉토리 탐색
-            while(tmp != NULL && strcasecmp(tmp->name, segment) != 0)
-                tmp = tmp->rightSibling;
-            if(tmp == NULL) {
-                // 없으면 새로 생성
-                Directory* newDir = createNewDirectory(segment, mode);
-                linkNewDirectory(currentDirectory, newDir);
-                addDirectoryRoute(newDir, currentDirectory, segment);
-                currentDirectory = newDir;
-            } else {
-                // 이미 있으면 그 디렉토리로 이동
-                currentDirectory = tmp;
-            }
-            free(segment);
-        }
-        if(dirName) free(dirName); // 마지막 세그먼트 메모리 해제
-        freeQueue(queue);
-        free(queue);
-        updateDirectoryFile(); // 파일에 반영
-        free(args);
-        return (void*)currentDirectory;
-    } else {
-        // -p 옵션 없음: 중간 경로가 없으면 에러
-        currentDirectory = (path[0] == '/') ? dirTree->root : dirTree->current;
-        Queue* queue = (Queue*)malloc(sizeof(Queue));
-        initQueue(queue);
-        splitPathToQueue(queue, pathCopy);
+    while (!isEmpty(queue)) {
+        char* segment = dequeue(queue);
 
-        char* dirName = NULL;
-        while(!isEmpty(queue)) {
-            char* segment = dequeue(queue);
-            dirName = segment;
-            Directory* tmp = currentDirectory->leftChild;
-            // 현재 디렉토리의 하위에서 이름 일치하는 디렉토리 탐색
-            while(tmp != NULL && strcasecmp(tmp->name, segment) != 0)
-                tmp = tmp->rightSibling;
-            if(isEmpty(queue)) {
-                // 마지막 세그먼트: 생성 시도
-                if(tmp != NULL) {
-                    printf("mkdir: cannot create directory '%s': File exists\n", path);
-                    free(segment);
-                    freeQueue(queue);
-                    free(queue);
-                    free(args);
-                    return NULL;
-                }
-                Directory* newDir = createNewDirectory(segment, mode);
-                linkNewDirectory(currentDirectory, newDir);
-                addDirectoryRoute(newDir, currentDirectory, segment);
-                updateDirectoryFile();
-                free(segment);
-                freeQueue(queue);
-                free(queue);
-                free(args);
-                return (void*)newDir;
-            }
-            if(tmp == NULL) {
-                // 중간 경로가 없으면 에러
+        Directory* tmp = currentDirectory->leftChild;
+        while (tmp != NULL && strcasecmp(tmp->name, segment) != 0)
+            tmp = tmp->rightSibling;
+
+        if (tmp == NULL) {
+            if (!createParents && !isEmpty(queue)) {
                 printf("mkdir: %s: No such file or directory.\n", path);
                 free(segment);
-                freeQueue(queue);
-                free(queue);
-                free(args);
-                return NULL;
+                break;
+            }
+            Directory* newDir = createNewDirectory(segment, mode);
+            linkNewDirectory(currentDirectory, newDir);
+            addDirectoryRoute(newDir, currentDirectory, segment);
+            currentDirectory = newDir;
+        } else {
+            if (isEmpty(queue) && !createParents) {
+                printf("mkdir: cannot create directory '%s': File exists\n", path);
+                free(segment);
+                break;
             }
             currentDirectory = tmp;
-            free(segment);
         }
-        freeQueue(queue);
-        free(queue);
-        free(args);
-        return (void*)currentDirectory;
+
+        free(segment);
     }
+
+    freeQueue(queue);
+    free(queue);
+    free(args);
+    updateDirectoryFile();
+    return (void*)currentDirectory;
 }
