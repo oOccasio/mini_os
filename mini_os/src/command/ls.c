@@ -60,8 +60,6 @@ void listDirectory(Directory *directory, bool showAll, bool showDetails) {
 
         case 1: // showAll = false, showDetails = true
             // 현재 디렉토리 상세 정보만 보여줌
-            showDirectoryDetail(directory, ".");
-            showDirectoryDetail(directory->parent, "..");
             break;
 
         case 2: // showAll = true, showDetails = false
