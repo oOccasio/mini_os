@@ -29,8 +29,16 @@ void catFiles(char* fileNames[], int fileCount, bool showLineNumber) {
         }
 
         char filePath[256];
-        snprintf(filePath, sizeof(filePath), "information/resources/file/%s", dirEntry->route);
+        const char *relativePath = dirEntry->route;
+        if (relativePath[0] == '/') {
+            relativePath++; // 맨 앞 '/' 제거
+        }
 
+        if (strlen(relativePath) == 0) {
+            snprintf(filePath, sizeof(filePath), "information/resources/file/%s", dirEntry->name);
+        } else {
+            snprintf(filePath, sizeof(filePath), "information/resources/file/%s", dirEntry->name);
+        }
         FILE* file = fopen(filePath, "r");
         if (file == NULL) {
             printf("cat: %s: Cannot open file\n", fileNames[i]);
