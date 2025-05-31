@@ -119,7 +119,16 @@ void appendFile(const char* fileName) {
     }
 
     char filePath[256];
-    snprintf(filePath, sizeof(filePath), "information/resources/file/%s", fileName);
+    const char *relativePath = existingFile->route;
+    if (relativePath[0] == '/') {
+        relativePath++; // 맨 앞 '/' 제거
+    }
+
+    if (strlen(relativePath) == 0) {
+        snprintf(filePath, sizeof(filePath), "information/resources/file/%s", existingFile->name);
+    } else {
+        snprintf(filePath, sizeof(filePath), "information/resources/file/%s", existingFile->name);
+    }
 
     FILE* file = fopen(filePath, "a");
     if (file == NULL) {
