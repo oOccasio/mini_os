@@ -565,7 +565,5 @@ void classificationCommand(char * cmd){
 
         unzip_files(zipName);
         // 압축 해제된 파일들은 zip_files 함수 내에서 가상 디렉토리에 추가됨
-    }else {
-    printf("잘못된 명령어입니다: %s\n", command);
-}
+    }
 }
