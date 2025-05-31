@@ -1,6 +1,4 @@
 #include "../../header/Header.h"
-#include <unistd.h>
-#include <string.h>
 
 // 외부 함수 선언: mkdir.c에 구현된 스레드 함수
 extern void* makeDirectory(void* arg);

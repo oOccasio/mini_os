@@ -407,6 +407,7 @@ Directory* loadDirectory() {
 }
 
 //find Recursive
+// ------------------------------------------------------------------------------------여기서부터 다시
 Directory* findRouteRecursive(Queue *queue, Directory *parent){
     if(isEmpty(queue)){
         return parent;

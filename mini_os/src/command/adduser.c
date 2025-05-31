@@ -23,7 +23,7 @@ User* adduser(char* argument, int UID, int GID, DirectoryTree* dirtree, UserList
 
     // UserList에 추가
     UserList* newUserList = (UserList*)malloc(sizeof(UserList));
-    if (!newUserList) { free(newUser); perror("malloc failed"); return; }
+    if (!newUserList) { free(newUser); perror("malloc failed"); return NULL; }
     newUserList->user = newUser;
     newUserList->nextUser = NULL;
 
@@ -39,7 +39,7 @@ User* adduser(char* argument, int UID, int GID, DirectoryTree* dirtree, UserList
     FILE* userFile = fopen("information/User.txt", "a");
     if (userFile == NULL) {
         fprintf(stderr, "Error: Unable to open User.txt for writing\n");
-        return;
+        return NULL;
     }
     fprintf(userFile, "%s %d %d %d %d %d %d %d %d %d %s / \n",
         newUser->name,

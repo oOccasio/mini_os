@@ -4,19 +4,16 @@
 void copyFile(Directory* source, Directory* destination) {
     char srcPath[256], destPath[256];
 
-    snprintf(srcPath, sizeof(srcPath), "information/resources/file%s", source->route);
-    snprintf(destPath, sizeof(destPath), "information/resources/file%s", destination->route);
+    const char *srcRoute = source->route;
+    if (srcRoute[0] == '/') srcRoute++;
 
-    // 상위 디렉토리 생성
-    char tempPath[256];
-    strncpy(tempPath, destPath, sizeof(tempPath));
-    char* lastSlash = strrchr(tempPath, '/');
-    if (lastSlash) {
-        *lastSlash = '\0';
-        char mkdirCmd[300];
-        snprintf(mkdirCmd, sizeof(mkdirCmd), "mkdir -p %s", tempPath);
-        system(mkdirCmd);
-    }
+    const char *destRoute = destination->route;
+    if (destRoute[0] == '/') destRoute++;
+
+    snprintf(srcPath, sizeof(srcPath), "information/resources/file/%s", source->name);
+    snprintf(destPath, sizeof(destPath), "information/resources/file/%s", destination->name);
+
+    printf("copying from '%s' to '%s'\n", srcPath, destPath);
 
     FILE* src = fopen(srcPath, "rb");
     if (!src) {

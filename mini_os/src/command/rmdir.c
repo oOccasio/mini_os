@@ -1,29 +1,51 @@
 #include "../../header/Header.h"
 
-// 디렉토리 및 하위 노드 메모리 재귀 해제
+// 실제 파일/디렉토리 삭제 함수 추가
+static void deletePhysicalFileOrDir(Directory* dir) {
+    if (dir == NULL) return;
+
+    char filePath[512];
+    const char* relativePath = dir->route;
+    if (relativePath[0] == '/') relativePath++;
+
+    if (strlen(relativePath) == 0) {
+        snprintf(filePath, sizeof(filePath), "information/resources/file/%s", dir->name);
+    } else {
+        snprintf(filePath, sizeof(filePath), "information/resources/file/%s", dir->name);
+    }
+
+    int ret;
+    if (dir->type == 'd') {
+        // 디렉토리는 rmdir() 호출
+        ret = rmdir(filePath);
+    } else {
+        // 파일은 remove() 호출
+        ret = remove(filePath);
+        printf("Deleted physical: %s\n", filePath);
+    }
+}
+
 void freeDirectory(Directory* dir) {
     if (dir == NULL) return;
-    freeDirectory(dir->leftChild);
-    freeDirectory(dir->rightSibling);
     free(dir);
 }
 
-// 부모의 자식 연결 리스트에서 디렉토리 제거 후 메모리 해제
 void removeDirectory(Directory* dir) {
     if (dir == NULL) return;
-    Directory* parent = dir->parent;
-    if (parent == NULL) return;  // 루트이거나 부모 없으면 제거 불가
 
-    // 삭제 전 디렉토리 정보 백업
+    // 1. 실제 파일 또는 디렉토리 삭제
+    deletePhysicalFileOrDir(dir);
+
+    Directory* parent = dir->parent;
+    if (parent == NULL) return;  // 루트 또는 부모 없으면 삭제 불가
+
     char dirName[MAX_NAME];
     strncpy(dirName, dir->name, MAX_NAME - 1);
     dirName[MAX_NAME - 1] = '\0';
 
-    // 부모의 leftChild가 삭제 대상이면 바로 연결 변경
     if (parent->leftChild == dir) {
         parent->leftChild = dir->rightSibling;
     } else {
-        // 부모의 자식 리스트 순회하며 대상 노드 찾기
         Directory* sibling = parent->leftChild;
         while (sibling != NULL && sibling->rightSibling != dir) {
             sibling = sibling->rightSibling;
@@ -33,12 +55,10 @@ void removeDirectory(Directory* dir) {
         }
     }
 
-    // 삭제 대상 노드의 연결 해제
     dir->parent = NULL;
     dir->rightSibling = NULL;
     dir->leftChild = NULL;
 
-    // 삭제 대상 노드 메모리 해제
     free(dir);
 
     printf("rmdir: successfully removed directory '%s'\n", dirName);
@@ -53,12 +73,12 @@ void removeDirectoryRecursive(Directory* dir) {
         if (child->type == 'd') {
             removeDirectoryRecursive(child);
         } else {
-            // 파일 노드면 바로 메모리 해제
+            deletePhysicalFileOrDir(child);  // 실제 파일 삭제
             freeDirectory(child);
         }
         child = next;
     }
-    // 자기 자신도 삭제
+
     removeDirectory(dir);
 }
 

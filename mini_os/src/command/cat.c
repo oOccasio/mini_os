@@ -39,6 +39,7 @@ void catFiles(char* fileNames[], int fileCount, bool showLineNumber) {
         } else {
             snprintf(filePath, sizeof(filePath), "information/resources/file/%s", dirEntry->name);
         }
+
         FILE* file = fopen(filePath, "r");
         if (file == NULL) {
             printf("cat: %s: Cannot open file\n", fileNames[i]);
