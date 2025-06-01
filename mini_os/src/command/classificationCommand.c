@@ -1,7 +1,5 @@
 #include "../header/Header.h"
 
-
-
 void classificationCommand(char * cmd){
     
     //명령어 없음
