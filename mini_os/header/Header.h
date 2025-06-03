@@ -135,10 +135,8 @@ typedef struct{
 //Queue 관리 코드
 //utills/queue.c
 void initQueue(Queue * queue);
-int isEmpty(Queue * queue);
-//bool isEmpty(Queue * queue); boolean이 더 명확해 보임
-int isFull(Queue * queue);
-//bool isFull(Queue * queue); boolean이 더 명확해 보임
+bool isEmpty(Queue * queue);
+bool isFull(Queue * queue);
 void enqueue(Queue * queue, const char * str);
 char * dequeue(Queue * queue);
 char * peek(Queue * queue);
