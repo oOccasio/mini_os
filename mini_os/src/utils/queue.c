@@ -8,12 +8,12 @@ void initQueue(Queue * queue){
 }
 
 
-int isEmpty(Queue * queue){
+bool isEmpty(Queue * queue){
     return queue->size == 0;
 }
 
 
-int isFull(Queue * queue){
+bool isFull(Queue * queue){
     return queue->size == MAX_QUEUE_SIZE;
 }
 
